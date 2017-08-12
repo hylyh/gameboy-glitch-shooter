@@ -1,4 +1,4 @@
-GCC=/opt/gbdk/bin/lcc
+CC=/opt/gbdk/bin/lcc
 OUTFILE=out.gb
 
 EMU=wine /Users/jayhay/Documents/gbshit/bgb/bgb.exe
@@ -10,7 +10,7 @@ FILES=main.c
 all: build run
 
 build:
-	$(GCC) -o $(OUTFILE) $(FILES)
+	$(CC) -o $(OUTFILE) $(FILES)
 
 run:
 	$(EMU) $(OUTFILE)
