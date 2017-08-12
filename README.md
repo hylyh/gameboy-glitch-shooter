@@ -7,3 +7,9 @@ You'll need the gbdk. I'm on MacOS and I had to find a prebuilt version to get o
 In the makefile, change CC to the path to your gbdk compiler, and EMU to wherever your emulator is (if it doesn't use wine, you'll have to remove that from the run section of the makefile.
 
 Run `make` to build and run. `make build` to just build the rom.
+
+# It's very pretty
+
+![Gif of the game running](https://github.com/jhayley/gameboy-glitch-shooter/raw/master/example.gif)
+
+see?
