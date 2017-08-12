@@ -11,12 +11,15 @@
 #define DIR_DOWNLEFT 6
 #define DIR_DOWNRIGHT 7
 
-#define PLAYER_WIDTH 3
-#define PLAYER_HEIGHT 3
+#define PLAYER_SIZE 5
+#define BULLET_SIZE 3
 
 #define LINE_LENGTH 3
 
+#define NUM_BULLETS 5
+
 UBYTE input;
+UBYTE lastInput;
 
 typedef struct Player {
   UBYTE x;
@@ -26,6 +29,17 @@ typedef struct Player {
 } Player;
 
 Player player;
+
+typedef struct Bullet {
+  UBYTE x;
+  UBYTE y;
+  BYTE dx;
+  BYTE dy;
+} Bullet;
+
+Bullet bullets[NUM_BULLETS];
+
+UBYTE bulletIndex;
 
 void init_draw()
 {
@@ -38,13 +52,24 @@ void init_draw()
 
 void init_game()
 {
+  UBYTE i;
+
   player.x = GRAPHICS_WIDTH / 2;
   player.y = GRAPHICS_HEIGHT / 2;
   player.dir = DIR_UPLEFT;
+
+  bulletIndex = 0;
+
+  for(i = 0; i < NUM_BULLETS; i++) {
+    bullets[i].x = 1;
+    bullets[i].y = 1;
+    bullets[i].dx = 0;
+    bullets[i].dy = 0;
+  }
 }
 
 // Get the x/y offset for the given direction
-void get_dir_offsets(UBYTE dir, UBYTE *x, UBYTE *y)
+void get_dir_offsets(UBYTE dir, BYTE *x, BYTE *y)
 {
   // Set x offset
   switch(dir) {
@@ -84,10 +109,22 @@ void get_dir_offsets(UBYTE dir, UBYTE *x, UBYTE *y)
   }
 }
 
+void shoot()
+{
+  bullets[bulletIndex].x = player.x;
+  bullets[bulletIndex].y = player.y;
+  get_dir_offsets(player.dir, &bullets[bulletIndex].dx, &bullets[bulletIndex].dy);
+
+  bulletIndex += 1;
+  if(bulletIndex >= NUM_BULLETS) {
+    bulletIndex = 0;
+  }
+}
+
 void update_player()
 {
-  UBYTE offset_x;
-  UBYTE offset_y;
+  BYTE offset_x;
+  BYTE offset_y;
 
   // Check for pure directional inputs (i.e. nothing else is pressed)
   if(input == J_DOWN) {
@@ -117,7 +154,7 @@ void update_player()
   }
 
   // Move the player based on direction (if a movement button is pressed)
-  if (input & (J_DOWN | J_UP | J_LEFT | J_RIGHT)) {
+  if(input & (J_DOWN | J_UP | J_LEFT | J_RIGHT)) {
     get_dir_offsets(player.dir, &offset_x, &offset_y);
     if (offset_x != 0 || offset_y != 0) {
       player.dirty = TRUE;
@@ -126,23 +163,30 @@ void update_player()
     player.x += offset_x;
     player.y += offset_y;
   }
+
+  if(input & J_A && !(lastInput & J_A))
+  {
+    shoot();
+  }
 }
 
 void draw_player()
 {
-  UBYTE line_offset_x;
-  UBYTE line_offset_y;
+  BYTE line_offset_x;
+  BYTE line_offset_y;
 
   if(player.dirty) {
     // Player moved, clear the old one
     color(WHITE, WHITE, SOLID);
-    circle(player.x, player.y, PLAYER_WIDTH + LINE_LENGTH, M_FILL);
+    circle(player.x, player.y, PLAYER_SIZE, M_FILL);
 
     player.dirty = FALSE;
   }
 
   color(BLACK, WHITE, OR);
-  box(player.x - 1, player.y - 1, player.x + 1, player.y + 1, M_FILL);
+  box(player.x - PLAYER_SIZE / 2, player.y - PLAYER_SIZE / 2,
+      player.x + PLAYER_SIZE / 2, player.y + PLAYER_SIZE / 2,
+      M_FILL);
 
   get_dir_offsets(player.dir, &line_offset_x, &line_offset_y);
   line_offset_x *= LINE_LENGTH;
@@ -151,17 +195,39 @@ void draw_player()
   line(player.x, player.y, player.x + line_offset_x, player.y + line_offset_y);
 }
 
+void update_bullets()
+{
+  UBYTE i;
+  for(i = 0; i < NUM_BULLETS; i++) {
+    bullets[i].x += bullets[i].dx;
+    bullets[i].y += bullets[i].dy;
+  }
+}
+
+void draw_bullets()
+{
+  UBYTE i;
+  color(DKGREY, DKGREY, XOR);
+  for(i = 0; i < NUM_BULLETS; i++) {
+    box(bullets[i].x - BULLET_SIZE / 2, bullets[i].y - BULLET_SIZE / 2,
+        bullets[i].x + BULLET_SIZE / 2, bullets[i].y + BULLET_SIZE / 2,
+        M_FILL);
+  }
+}
+
 void main()
 {
   init_draw();
   init_game();
 
   while(TRUE) {
+    lastInput = input;
     input = joypad();
 
     update_player();
     draw_player();
-  }
 
-  draw_player();
+    update_bullets();
+    draw_bullets();
+  }
 }
