@@ -17,6 +17,7 @@
 #define LINE_LENGTH 3
 
 #define NUM_BULLETS 5
+#define MAX_BULLET_CIRCLE_RAD 50
 
 UBYTE input;
 UBYTE lastInput;
@@ -35,11 +36,25 @@ typedef struct Bullet {
   UBYTE y;
   BYTE dx;
   BYTE dy;
+
+  // If true, then special kind of cone bullets
+  UBYTE circle;
+  UBYTE radius;
 } Bullet;
 
 Bullet bullets[NUM_BULLETS];
 
 UBYTE bulletIndex;
+
+void reset_bullet(UBYTE i)
+{
+  bullets[i].x = 1;
+  bullets[i].y = 1;
+  bullets[i].dx = 0;
+  bullets[i].dy = 0;
+  bullets[i].circle = FALSE;
+  bullets[i].radius = 0;
+}
 
 void init_draw()
 {
@@ -61,10 +76,7 @@ void init_game()
   bulletIndex = 0;
 
   for(i = 0; i < NUM_BULLETS; i++) {
-    bullets[i].x = 1;
-    bullets[i].y = 1;
-    bullets[i].dx = 0;
-    bullets[i].dy = 0;
+    reset_bullet(i);
   }
 }
 
@@ -109,10 +121,25 @@ void get_dir_offsets(UBYTE dir, BYTE *x, BYTE *y)
   }
 }
 
-void shoot()
+void shoot_bullet()
 {
   bullets[bulletIndex].x = player.x;
   bullets[bulletIndex].y = player.y;
+  get_dir_offsets(player.dir, &bullets[bulletIndex].dx, &bullets[bulletIndex].dy);
+
+  bulletIndex += 1;
+  if(bulletIndex >= NUM_BULLETS) {
+    bulletIndex = 0;
+  }
+}
+
+void shoot_circle()
+{
+  bullets[bulletIndex].x = player.x;
+  bullets[bulletIndex].y = player.y;
+  bullets[bulletIndex].circle = TRUE;
+  bullets[bulletIndex].radius = 0;
+
   get_dir_offsets(player.dir, &bullets[bulletIndex].dx, &bullets[bulletIndex].dy);
 
   bulletIndex += 1;
@@ -164,9 +191,12 @@ void update_player()
     player.y += offset_y;
   }
 
-  if(input & J_A && !(lastInput & J_A))
-  {
-    shoot();
+  if(input & J_A && !(lastInput & J_A)) {
+    shoot_bullet();
+  }
+
+  if(input & J_B && !(lastInput & J_B)) {
+    shoot_circle();
   }
 }
 
@@ -201,17 +231,31 @@ void update_bullets()
   for(i = 0; i < NUM_BULLETS; i++) {
     bullets[i].x += bullets[i].dx;
     bullets[i].y += bullets[i].dy;
+
+    if(bullets[i].circle) {
+      bullets[i].radius += 2;
+
+      if(bullets[i].radius > MAX_BULLET_CIRCLE_RAD) {
+        reset_bullet(i);
+      }
+    }
   }
 }
 
 void draw_bullets()
 {
   UBYTE i;
-  color(DKGREY, DKGREY, XOR);
   for(i = 0; i < NUM_BULLETS; i++) {
-    box(bullets[i].x - BULLET_SIZE / 2, bullets[i].y - BULLET_SIZE / 2,
-        bullets[i].x + BULLET_SIZE / 2, bullets[i].y + BULLET_SIZE / 2,
-        M_FILL);
+    if (bullets[i].circle) {
+      color(LTGREY, LTGREY, XOR);
+      circle(bullets[i].x, bullets[i].y, bullets[i].radius, M_NOFILL);
+    }
+    else {
+      color(DKGREY, DKGREY, XOR);
+      box(bullets[i].x - BULLET_SIZE / 2, bullets[i].y - BULLET_SIZE / 2,
+          bullets[i].x + BULLET_SIZE / 2, bullets[i].y + BULLET_SIZE / 2,
+          M_FILL);
+    }
   }
 }
 
