@@ -1,7 +1,7 @@
 CC=/opt/gbdk/bin/lcc
 OUTFILE=out.gb
 
-EMU=wine /Users/jayhay/Documents/gbshit/bgb/bgb.exe
+EMU=wine /Users/hayley/Documents/gbshit/bgb/bgb.exe
 
 FILES=main.c
 
