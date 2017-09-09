@@ -1,0 +1,30 @@
+html, body {
+  width: 640px;
+  height: 100%;
+  background-color: rgb(239, 255, 222);
+  color: rgb(82, 146, 115);
+  text-align: center;
+  margin: auto;
+  padding: 0;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+a {
+  color: inherit;
+}
+
+#mainCanvas {
+  image-rendering: optimizeSpeed;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: -o-crisp-edges;
+  image-rendering: pixelated;
+  -ms-interpolation-mode: nearest-neighbor;
+
+  border: 2px solid rgb(82, 146, 115);
+  margin: 20px;
+}
+
+#instructions span {
+  margin: 0 10px;
+}
