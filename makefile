@@ -1,5 +1,5 @@
 CC=/opt/gbdk/bin/lcc
-OUTFILE=out.gb
+OUTFILE=glitch.gb
 
 EMU=wine /Users/hayley/Documents/gbshit/bgb/bgb.exe
 
